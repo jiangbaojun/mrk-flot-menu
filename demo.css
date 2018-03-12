@@ -1,0 +1,126 @@
+*{margin: 0; padding: 0;}
+body{ font-size: 12px; }
+li{ list-style: none;}
+a{ text-decoration: none;}
+/*一级菜单默认样式*/
+.menu-container ul.nav > li{
+    width: 200px;
+    text-align: left;
+    position: relative;
+    background: #72a7ff;
+}
+/*一级菜单文本样式*/
+.menu-container ul.nav > li > a {
+    font-size: 14px;
+    font-family: Microsoft YaHei;
+    font-weight: bold;
+    color: #333;
+}
+/*一级菜单图标文本对齐样式-没有图标*/
+.menu-container ul.nav > li > a.no-icon > span.menu-text{
+    margin-left: 45px;
+}
+/*一级菜单图标文本对齐样式-text*/
+.menu-container ul.nav > li > a > .menu-text{
+    line-height: 40px;
+    margin-left: 5px;
+}
+/*一级菜单图标文本对齐样式-img*/
+.menu-container ul.nav > li > a > img.menu-icon {
+    height: 15px;
+    width: 15px;
+    border-radius: 5px;
+    float: left;
+    margin: 13px 0 0px 25px;
+}
+/*一级菜单图标文本对齐样式-fontsome*/
+.menu-container ul.nav > li > a >  i.fa {
+    border-radius: 5px;
+    float: left;
+    margin: 13px 0 0 25px;
+}
+
+
+/*二级及以下级别菜单样式，菜单宽度200px，和子级右悬浮位置要一样（position right -200px）*/
+.menu-container ul.nav > li > ul li{
+    width: 200px;
+    text-align: left;
+    position: relative;
+    background: #a1d9ff;
+}
+/*二级及以下级别菜单文本样式*/
+.menu-container ul.nav > li > ul > li a {
+    font-size: 13px;
+    font-family: Microsoft YaHei;
+    font-weight: bold;
+    color: #ff2117;
+}
+/*二级及以下级别菜单图标文本对齐样式-没有图标*/
+.menu-container ul.nav > li > ul > li a.no-icon > span.menu-text {
+    margin-left: 27px;
+}
+/*二级及以下级别菜单图标文本对齐样式-text*/
+.menu-container ul.nav > li > ul > li a > .menu-text{
+    line-height: 40px;
+    margin-left: 5px;
+}
+/*二级及以下级别菜单图标文本对齐样式-img*/
+.menu-container ul.nav > li > ul a img.menu-icon {
+    height: 14px;
+    width: 14px;
+    border-radius: 5px;
+    float: left;
+    margin: 13px 0 0 8px;
+}
+/*二级及以下级别菜单图标文本对齐样式-fontsome*/
+.menu-container ul.nav > li > ul a i.fa {
+    font-size: 14px;
+    border-radius: 5px;
+    float: left;
+    margin: 13px 0 0 10px;
+}
+
+
+/*鼠标放上（选中）菜单颜色*/
+.menu-container ul.nav > li:hover{
+    background: #a1d9ff!important;
+}
+/*二级及以下级别菜单容器初始样式*/
+.menu-container ul > li > ul{
+    display: none;
+}
+/*当鼠标放入，下一级菜单样式*/
+.menu-container ul > li.on > ul{
+    display: block;
+}
+/*从二级菜单开始，悬浮展开-顶部对齐top*/
+/*如果想要从三级开始：ul.nav > li > ul > li ul{}，四级：ul.nav > li > ul > li > ul > li ul{}*/
+.menu-container ul.nav > li ul.top{
+    position:  absolute;
+    top: 0;
+    right: -200px;
+}
+/*从二级菜单开始，悬浮展开-底部对齐bottom*/
+/*如果想要从三级开始：ul.nav > li > ul > li ul{}，四级：ul.nav > li > ul > li > ul > li ul{}*/
+.menu-container ul.nav > li ul.bottom{
+    position:  absolute;
+    bottom: 0;
+    right: -200px;
+}
+/*展开折叠的箭头*/
+.menu-container ul.nav span.arrow{
+    position: absolute;
+    display: block;
+    right:10px;
+    top: 0;
+    width: 10px;
+    height: 40px;
+}
+/*展开折叠的箭头-折叠*/
+.menu-container ul.nav li > a > span.arrow{
+    background: url(images/arrows.png) no-repeat center center;
+}
+/*展开折叠的箭头-展开*/
+.menu-container ul.nav li.on > a > span.arrow{
+    background: url(images/arrows-on.png) no-repeat center center;
+}
