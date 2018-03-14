@@ -15,18 +15,23 @@
  *     参数说明：
  *          1、selector 选择器，生成菜单的外层容器
  *          2、options：
- *                  menuData：       菜单数据
- *                  menuRootId：     菜单根节点id，控件根据该id，生成所有子节点的菜单
- *                  onClickMenu:     事件，点击菜单节点时的回调函数。
+ *                  menuData：       菜单数据，默认[]
+ *                  menuRootId：     菜单根节点id，控件根据该id，生成所有子节点的菜单,默认""
+ *                  searchResultToTree：每次过滤搜索，是否以树形展示过滤结果，默认false
+ *                  onClickMenu:	事件，点击菜单节点时的回调函数。
  *                                          function(data)，data为回调函数参数，object，字段如下：
  *                                              direct:     是否是最底层节点（没有子菜单，直接的菜单项）
  *                                              level:      当前点击的菜单级别，从1开始
  *                                              data:       点击的菜单节点数据
  *                                              e:e         原始event对象
+ *                                              
+ *  暴露方法：
+ *  	search：过滤搜索菜单，并重新渲染
+ *  		用法：$(selector).mrkMenu("search",searchText)
  *
  *
  * @author jiangbaojun
- * @version V1.0
+ * @version V1.1
  */
 (function ($) {
     /**
@@ -35,33 +40,187 @@
      * @param params    暴露方法参数
      */
     $.fn.mrkMenu = function (options, params) {
+    	//扩展方法
+        if (typeof options == "string") {
+            var method = $.fn.mrkMenu.methods[options];
+            if (method) return method(this, params);
+        }
+    	//扩展默认配置选项数据
+    	extendDefault(options);
         //初始化控件
-        init(this, options, params);
+        init(this, params);
     };
+    /**
+     * 控件暴露方法
+     */
+    $.fn.mrkMenu.methods = {
+        /**
+         * 根据过滤条件,刷新菜单
+         * @param target    target
+         * @param text      过滤文本
+         */
+		"search": function(target, text){
+			activeOptions.searchText = text;
+			//根据搜索条件过滤菜单数据
+	        activeOptions = filterMenuData(activeOptions);
+			init(target, text);
+		}
+	};
     /**
      * 控件默认配置选项
      */
     $.fn.mrkMenu.defaultOptions = {
         menuData: [],
         menuRootId: "",
+        searchResultToTree: false,
         onClickMenu: function(target){}
     };
     var activeOptions = $.fn.mrkMenu.defaultOptions;
+    
+    /**
+     * 扩展默认配置选项数据
+     * @param options   初始化配置选项，用于替换控件默认配置选项
+     */
+    function extendDefault(options){
+    	//不可自定义默认配置
+    	var innerDefaultOptions = {
+			menuStartIndex: 1,
+			searchText: "",
+			originData: options.menuData,
+			searchPid: "search-root"
+    	};
+        //扩展自定义配置
+        var opts = $.extend({}, $.fn.mrkMenu.defaultOptions);
+        activeOptions = $.extend(true, opts, options, innerDefaultOptions);
+    }
     /**
      * 初始化浮动展开菜单
      * @param target    目标菜单容器
-     * @param options   初始化配置选项，用于替换控件默认配置选项
      * @param params    暴露方法参数
      */
-    function init(target, options, params){
-        //不可自定义默认配置
-        $.fn.mrkMenu.defaultOptions.menuStartIndex = 1;
-        //扩展自定义配置
-        var opts = $.extend({}, $.fn.mrkMenu.defaultOptions);
-        activeOptions = $.extend(true, opts, options);
+    function init(target, params){
+        //清除旧的菜单内容
+        target.html("");
         createMenus(target,activeOptions.menuRootId,activeOptions.menuStartIndex);
     }
+    
+    /**
+     * 根据搜索条件过滤菜单数据
+     * @param activeOptions  控件输入参数
+     */
+    function filterMenuData(activeOptions){
+    	var searchText = activeOptions.searchText;
+    	var menuData = activeOptions.originData;
+    	var filterData = [];
+    	if(searchText==null || searchText==undefined || searchText==""){
+    		return activeOptions;
+    	}
+    	var reg = new RegExp(searchText);
+    	//获得所有直接节点数组
+    	for(var i=0;i<menuData.length;i++){
+    		var item = menuData[i];
+    		if(reg.test(item.title) && !hasChildren(menuData,item.id)){
+    			if(!activeOptions.searchResultToTree){
+    				item.parentId=activeOptions.searchPid;
+    			}
+    			filterData.push(item);
+    		}
+    	}
+    	if(activeOptions.searchResultToTree){
+    		//树形结果展示，需要获得所有父节点
+    		activeOptions.menuData = getAllParents(filterData);
+    	}else{
+    		activeOptions.menuRootId = activeOptions.searchPid;
+    		activeOptions.menuData = filterData;
+    	}
+    	return activeOptions;
+    }
 
+    /**
+     * 判断当前节点是否有子节点
+     * @param menuData  菜单数据
+     * @param id  		当前节点id
+     */
+    function hasChildren(menuData,id){
+    	for(var i=0;i<menuData.length;i++){
+    		var item = menuData[i];
+    		if(item.parentId == id){
+    			return true
+    		}
+    	}
+    	return false;
+    }
+    
+    /**
+     * 获得给定节点数组的所有父节点
+     * @param filterData  给定节点数组
+     */
+    function getAllParents(filterData){
+    	var resultArr = filterData;
+    	var noRepeatPids = [];
+    	for(var i=0;i<filterData.length;i++){
+    		var item = filterData[i];
+    		//filterData内相同父节点的节点，获得一次就可以
+    		if(!containItem(noRepeatPids, item.parentId)){
+    			noRepeatPids.push(item.parentId);
+    			var parentNodes = getParents(item,[]);
+    			//去除重复节点
+    			for(var k=0;k<parentNodes.length;k++){
+    				if(!containNode(resultArr, parentNodes[k])){
+    					resultArr.push(parentNodes[k]);
+    				}
+    			}
+    		}
+    	}
+    	return resultArr;
+    }
+    
+    /**
+     * 数组包含判断
+     */
+    function containItem(ids, id){
+    	for(var i=0;i<ids.length;i++){
+    		if(ids[i] == id){
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+    
+    /**
+     * 节点包含判断
+     */
+    function containNode(arr, item){
+    	for(var i=0;i<arr.length;i++){
+    		if(arr[i].id == item.id){
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+    
+    /**
+     * 获得给定节点的所有父节点,不包含当前节点
+     * @param item  给定节点
+     * @param result  累加结果数据
+     */
+    function getParents(item,result){
+    	var menuData = activeOptions.originData;
+    	var parentNode = null;
+    	for(var i=0;i<menuData.length;i++){
+    		var temp = menuData[i];
+    		if(temp.id == item.parentId){
+    			parentNode= temp;
+    			break;
+    		}
+    	}
+    	if(parentNode != null){
+    		result.push(parentNode);
+    		getParents(parentNode,result);
+    	}
+    	return result;
+    }
+    
     /* 创建菜单dom元素
     * @param target     菜单根节点jquery对象
     * @param id         菜单数据根节点id值
@@ -74,7 +233,7 @@
             return;
         }
         if(j==activeOptions.menuStartIndex){
-            target = $('<ul />').addClass("nav").appendTo(target);
+            target = $('<ul />').addClass("menu-root").appendTo(target);
             target.addClass('treeview-level-'+j++);
             target.html("");
             target.append('<li class="header">主菜单</li>');
@@ -118,7 +277,7 @@
                 $('<span class="arrow fold"></span>').appendTo(li_a);
                 //菜单选项添加事件
                 li.on('click', function (e) {
-                    activeOptions.onClickMenu.call(self, {direct:false, level:j-1, data:that, e:e});
+                    activeOptions.onClickMenu.call(li, {direct:false, level:j-1, data:that, e:e});
                     e.preventDefault();
                     e.stopPropagation();
                 });
@@ -126,7 +285,7 @@
                 li.addClass("direct-menu");
                 //菜单选项添加事件
                 li.on('click', function (e) {
-                    activeOptions.onClickMenu.call(self, {direct:true, level:j-1, data:that, e:e});
+                    activeOptions.onClickMenu.call(li, {direct:true, level:j-1, data:that, e:e});
                     e.preventDefault();
                     e.stopPropagation();
                 });
