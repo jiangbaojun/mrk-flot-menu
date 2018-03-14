@@ -69,9 +69,16 @@
               }
           });
       });
+	  function search(){
+		var searchText = $("#str").val();
+		$("#menuContainer").mrkMenu("search",searchText);
+	  }
   </script>
 </head>
 <body>
+  <div>
+	  <input id="str" type="text"/><button onclick="search()">过滤</button>
+  </div>
   <div id="menuContainer" class="menu-container"></div>
 </body>
 </html>
