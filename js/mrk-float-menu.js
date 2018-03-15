@@ -87,6 +87,7 @@
 			menuStartIndex: 1,
 			searchText: "",
 			originData: options.menuData,
+            originMenuRootId: options.menuRootId,
 			searchPid: "search-root"
     	};
         //扩展自定义配置
@@ -113,6 +114,8 @@
     	var menuData = activeOptions.originData;
     	var filterData = [];
     	if(searchText==null || searchText==undefined || searchText==""){
+            activeOptions.menuData = activeOptions.originData;
+            activeOptions.menuRootId = activeOptions.originMenuRootId;
     		return activeOptions;
     	}
     	var reg = new RegExp(searchText);
