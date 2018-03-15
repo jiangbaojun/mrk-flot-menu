@@ -1,3 +1,12 @@
+/* -----------------------------------------------
+/* Author : jiangbaojun
+/* Demo
+/* GitHub : https://github.com/jiangbaojun/mrk-flot-menu.git
+/* How to use? : Check the GitHub README
+/* v1.1
+/* ----------------------------------------------- */
+
+
 /**
  * 浮动展开菜单
  * 数据说明：
